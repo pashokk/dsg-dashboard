@@ -152,17 +152,27 @@
     .stat:nth-child(2){border-right:none;}
   }
 
-  /* workload bars */
-  .workload-row{
+  /* workload bars — each row is a <details> that expands into its status/type breakdown */
+  details.workload-item{border-bottom:1px solid var(--line);}
+  details.workload-item:first-child{border-top:1px solid var(--line);}
+  summary.workload-row{
     display:grid;
-    grid-template-columns:120px 1fr 3.6rem;
+    grid-template-columns:1rem 120px 1fr 3.6rem;
     align-items:center;
     gap:0.8rem;
     padding:0.55rem 0;
-    border-bottom:1px solid var(--line);
     font-size:0.9rem;
+    cursor:pointer;
+    list-style:none;
   }
-  .workload-row:first-child{border-top:1px solid var(--line);}
+  summary.workload-row::-webkit-details-marker{display:none;}
+  summary.workload-row::marker{display:none;}
+  .workload-row .caret{
+    color:var(--ink-soft);
+    display:inline-block;
+    transition:transform .15s;
+  }
+  details.workload-item[open] > summary.workload-row .caret{transform:rotate(90deg);}
   .workload-row .name{font-weight:500;}
   .bar-track{
     height:0.55rem;
@@ -196,18 +206,10 @@
   .type-legend .item{display:flex;align-items:center;gap:0.4rem;}
   .type-legend .dot{width:0.6rem;height:0.6rem;border-radius:50%;display:inline-block;}
 
-  /* per-person status x type breakdown */
-  details.workload-detail{
-    border-bottom:1px solid var(--line);
-    padding:0.35rem 0;
+  /* per-person status x type breakdown, nested inside the expanded workload row */
+  .workload-status-detail{
+    padding:0.2rem 0 0.7rem 1rem;
   }
-  details.workload-detail summary{
-    cursor:pointer;
-    font-size:0.85rem;
-    color:var(--ink-soft);
-    padding:0.25rem 0;
-  }
-  details.workload-detail summary::marker{color:var(--ink-soft);}
   .detail-status-row{
     display:grid;
     grid-template-columns:100px 2.2rem 1fr;
@@ -548,15 +550,32 @@ function render(data){
     <span class="item"><span class="dot" style="background:${TAG_COLOR[t] || 'var(--ink-soft)'}"></span>${escapeHtml(t)}</span>
   `).join('');
 
+  const workloadDetailByName = {};
+  (data.workload_detail || []).forEach(person => { workloadDetailByName[person.name] = person; });
+
   const workloadHtml = data.workload.map(w => {
     const segments = (w.by_type && w.by_type.length) ? w.by_type : [{ tag: 'Other', count: w.open }];
     const barSegHtml = segments.map(t => `<span class="bar-seg" title="${escapeHtml(t.tag)}: ${t.count}" style="width:${w.open ? (t.count / w.open * 100).toFixed(1) : 0}%;background:${TAG_COLOR[t.tag] || 'var(--ink-soft)'}"></span>`).join('');
+    const detail = workloadDetailByName[w.name];
+    const statusDetailHtml = detail ? detail.statuses.map(st => `
+        <div class="detail-status-row">
+          <span class="detail-status-label">${escapeHtml(st.status)}</span>
+          <span class="detail-status-total">${st.total}</span>
+          <span class="tag-chips">
+            ${st.types.map(t => `<span class="tag-chip" style="--chip:${TAG_COLOR[t.tag] || 'var(--ink-soft)'}">${escapeHtml(t.tag)} · ${t.count}</span>`).join('')}
+          </span>
+        </div>
+      `).join('') : '';
     return `
-    <div class="workload-row">
-      <span class="name">${escapeHtml(w.name)}</span>
-      <span class="bar-track"><span class="bar-fill-stack" style="width:${(w.open / maxOpen * 100).toFixed(0)}%">${barSegHtml}</span></span>
-      <span class="count">${w.open} open</span>
-    </div>
+    <details class="workload-item">
+      <summary class="workload-row">
+        <span class="caret">▸</span>
+        <span class="name">${escapeHtml(w.name)}</span>
+        <span class="bar-track"><span class="bar-fill-stack" style="width:${(w.open / maxOpen * 100).toFixed(0)}%">${barSegHtml}</span></span>
+        <span class="count">${w.open} open</span>
+      </summary>
+      <div class="workload-status-detail">${statusDetailHtml}</div>
+    </details>
   `;
   }).join('');
 
@@ -574,21 +593,6 @@ function render(data){
       <span class="bar-track"><span class="bar-fill" style="width:${(t.count / maxType * 100).toFixed(0)}%;background:${TAG_COLOR[t.tag] || 'var(--ink-soft)'}"></span></span>
       <span class="count">${t.count}</span>
     </div>
-  `).join('');
-
-  const workloadDetailHtml = (data.workload_detail || []).map(person => `
-    <details class="workload-detail">
-      <summary>${escapeHtml(person.name)} — breakdown by status &amp; type</summary>
-      ${person.statuses.map(st => `
-        <div class="detail-status-row">
-          <span class="detail-status-label">${escapeHtml(st.status)}</span>
-          <span class="detail-status-total">${st.total}</span>
-          <span class="tag-chips">
-            ${st.types.map(t => `<span class="tag-chip" style="--chip:${TAG_COLOR[t.tag] || 'var(--ink-soft)'}">${escapeHtml(t.tag)} · ${t.count}</span>`).join('')}
-          </span>
-        </div>
-      `).join('')}
-    </details>
   `).join('');
 
   const staleHtml = data.stale_tickets.length ? `
@@ -621,7 +625,7 @@ function render(data){
 
     <section>
       <h2>Workload</h2>
-      <p class="hint">Open tickets per person right now. Longer bar means more sitting on their plate; color shows what kind of work it is (hover a segment for the exact count).</p>
+      <p class="hint">Open tickets per person right now. Longer bar means more sitting on their plate; color shows what kind of work it is (heuristic keyword match — see <code>TAG_RULES</code> in <code>fetch_data.py</code>). Expand a name to see that split by status too.</p>
       <div class="type-legend">${typeLegendHtml}</div>
       ${workloadHtml}
     </section>
@@ -636,12 +640,6 @@ function render(data){
       <div class="trend-wrap" id="trend-wrap">
         ${data.trend ? buildTrendChart(data.trend) : '<div class="empty">No trend data yet.</div>'}
       </div>
-    </section>
-
-    <section>
-      <h2>Workload — by status &amp; type</h2>
-      <p class="hint">Each person's open tickets, split by status, tagged by the kind of request (heuristic keyword match on summary/labels — see <code>TAG_RULES</code> in <code>fetch_data.py</code>). Expand a name to see e.g. whether their In Review load is mostly UI/Dashboard work or something else.</p>
-      ${workloadDetailHtml}
     </section>
 
     <div class="grid-two">
