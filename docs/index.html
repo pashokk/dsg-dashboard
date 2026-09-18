@@ -21,6 +21,7 @@
     --violet:#6B5CA5;
     --info:#3E6B94;
     --teal:#2E7A73;
+    --plum:#8C4B6B;
     --font-display: "Newsreader", Georgia, serif;
     --font-body: "Work Sans", -apple-system, sans-serif;
   }
@@ -37,6 +38,7 @@
       --violet:#A08FD0;
       --info:#6FA8D9;
       --teal:#4FB0A6;
+      --plum:#C283A6;
     }
   }
   :root[data-theme="dark"]{
@@ -51,6 +53,7 @@
     --violet:#A08FD0;
     --info:#6FA8D9;
     --teal:#4FB0A6;
+    --plum:#C283A6;
   }
 
   *{box-sizing:border-box;}
@@ -399,6 +402,7 @@ const TAG_COLOR = {
   'Illustration / Graphics': 'var(--good)',
   'Branding / Print': 'var(--violet)',
   'Video / Motion': 'var(--teal)',
+  'HR / Internal': 'var(--plum)',
   'Other': 'var(--ink-soft)',
 };
 
@@ -537,7 +541,7 @@ function render(data){
     </div>
   `;
 
-  const TAG_ORDER = ['UI / Dashboard', 'Presentations / Decks', 'Website / Landing', 'Illustration / Graphics', 'Branding / Print', 'Video / Motion', 'Other'];
+  const TAG_ORDER = ['UI / Dashboard', 'Presentations / Decks', 'Website / Landing', 'Illustration / Graphics', 'Branding / Print', 'Video / Motion', 'HR / Internal', 'Other'];
   const tagsPresent = new Set();
   data.workload.forEach(w => (w.by_type || []).forEach(t => tagsPresent.add(t.tag)));
   const typeLegendHtml = TAG_ORDER.filter(t => tagsPresent.has(t)).map(t => `

@@ -60,11 +60,11 @@ TAG_RULES = [
     ("Illustration / Graphics", ["illustration", "icon", "graphic", "artwork", "banner", "asset"]),
     ("Branding / Print", ["logo", "brand", "print", "poster", "brochure", "packaging"]),
     ("Video / Motion", ["video", "animation", "motion", "gif", "reel"]),
+    ("HR / Internal", [r"\bhr\b", "administrative team", "offer letter"]),
 ]
 
 
-def classify_type(summary, labels):
-    text = (summary or "").lower() + " " + " ".join(labels or []).lower()
+def _match_tag(text):
     for tag, patterns in TAG_RULES:
         for pat in patterns:
             if pat.startswith(r"\b"):
@@ -72,6 +72,22 @@ def classify_type(summary, labels):
                     return tag
             elif pat in text:
                 return tag
+    return None
+
+
+def classify_type(summary, labels, parent_summary=None):
+    text = (summary or "").lower() + " " + " ".join(labels or []).lower()
+    tag = _match_tag(text)
+    if tag:
+        return tag
+    # Fall back to the parent epic's name — often more descriptive than the
+    # ticket's own summary (e.g. a sub-task called "Fix filter bug" under an
+    # epic called "Improve Dashboard UX") — but only when the ticket's own
+    # text didn't already tell us what it is.
+    if parent_summary:
+        tag = _match_tag(parent_summary.lower())
+        if tag:
+            return tag
     return "Other"
 
 # Override with DATA_OUTPUT_PATH inside the container (Coolify sets this to
@@ -179,7 +195,7 @@ def main():
 
     excluded_clause = "".join(f' AND status != "{s}"' for s in EXCLUDED_STATUSES)
 
-    open_fields = ["summary", "status", "assignee", "created", "priority", "labels"]
+    open_fields = ["summary", "status", "assignee", "created", "priority", "labels", "parent"]
     open_issues = search_all_issues(
         f"project = {PROJECT_KEY} AND statusCategory != Done{excluded_clause} ORDER BY created ASC",
         open_fields,
@@ -219,7 +235,9 @@ def main():
         aname = assignee["displayName"] if assignee else "Unassigned"
         assignee_open[aname] += 1
 
-        tag = classify_type(f["summary"], f.get("labels"))
+        parent = f.get("parent")
+        parent_summary = parent["fields"]["summary"] if parent else None
+        tag = classify_type(f["summary"], f.get("labels"), parent_summary)
         type_counts[tag] += 1
         detail[aname][status_name][tag] += 1
         assignee_type_counts[aname][tag] += 1
