@@ -25,9 +25,21 @@
     { "tag": "Presentations / Decks", "count": 4 }
   ],
   "trend": {
-    "weeks": ["Jul 21", "Jul 28", "Aug 4", "Aug 11", "Aug 18", "Aug 25", "Sep 1", "Sep 8"],
-    "opened": [5, 7, 4, 6, 8, 5, 9, 6],
-    "completed": [3, 5, 6, 4, 7, 6, 8, 7]
+    "day": {
+      "labels": ["Aug 18", "Aug 19", "Aug 20", "Aug 21", "Aug 22", "Aug 23", "Aug 24", "Aug 25", "Aug 26", "Aug 27", "Aug 28", "Aug 29", "Aug 30", "Aug 31", "Sep 1", "Sep 2", "Sep 3", "Sep 4", "Sep 5", "Sep 6", "Sep 7", "Sep 8", "Sep 9", "Sep 10", "Sep 11", "Sep 12", "Sep 13", "Sep 14", "Sep 15", "Sep 16"],
+      "opened": [3, 0, 0, 3, 1, 0, 0, 0, 3, 0, 3, 3, 2, 0, 2, 1, 0, 0, 0, 0, 0, 2, 2, 0, 2, 0, 3, 3, 3, 2],
+      "completed": [1, 0, 1, 2, 1, 0, 0, 3, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 2, 1, 0, 3, 1, 2, 0, 1, 0, 2]
+    },
+    "week": {
+      "labels": ["Jun 25", "Jul 2", "Jul 9", "Jul 16", "Jul 23", "Jul 30", "Aug 6", "Aug 13", "Aug 20", "Aug 27", "Sep 3", "Sep 10"],
+      "opened": [5, 9, 8, 7, 9, 5, 7, 4, 8, 3, 3, 8],
+      "completed": [4, 9, 5, 3, 9, 4, 9, 3, 6, 5, 6, 8]
+    },
+    "month": {
+      "labels": ["Oct '25", "Nov '25", "Dec '25", "Jan '26", "Feb '26", "Mar '26", "Apr '26", "May '26", "Jun '26", "Jul '26", "Aug '26", "Sep '26"],
+      "opened": [19, 13, 19, 19, 14, 29, 16, 30, 29, 28, 10, 27],
+      "completed": [28, 13, 25, 15, 13, 22, 20, 16, 28, 30, 25, 15]
+    }
   },
   "workload": [
     { "name": "Pavel Savinskiy", "open": 16, "done_recent": 14, "by_type": [

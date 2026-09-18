@@ -37,8 +37,10 @@ PROJECT_KEY = os.environ.get("JIRA_PROJECT_KEY", "DSG")
 STALE_DAYS = 180
 # Window used for the recent-turnaround and recent-throughput numbers.
 RECENT_DAYS = 90
-# Number of weekly buckets in the opened-vs-completed trend chart.
+# Number of buckets in the opened-vs-completed trend chart, per granularity.
+TREND_DAYS = 30
 TREND_WEEKS = 12
+TREND_MONTHS = 12
 
 # Backlog isn't used by this team (new tickets start in "To Do"), so it's
 # excluded everywhere: counts, workload, stale detection, the trend chart.
@@ -291,39 +293,64 @@ def main():
     ]
     workload.sort(key=lambda r: -r["open"])
 
-    # ---- weekly opened vs completed trend (last TREND_WEEKS weeks) ----
+    # ---- opened vs completed trend, at day/week/month granularity ----
+    def build_trend(edges, label_fmt):
+        n = len(edges) - 1
+        opened_counts = [0] * n
+        completed_counts = [0] * n
+
+        def bucket_of(dt):
+            for i in range(n):
+                if edges[i] <= dt < edges[i + 1]:
+                    return i
+            return None
+
+        for issue in open_issues + done_issues:
+            created = parse_dt_safe(issue["fields"]["created"])
+            if created:
+                i = bucket_of(created)
+                if i is not None:
+                    opened_counts[i] += 1
+
+        for issue in done_issues:
+            resolved = parse_dt_safe(issue["fields"].get("resolutiondate"))
+            if resolved:
+                i = bucket_of(resolved)
+                if i is not None:
+                    completed_counts[i] += 1
+
+        return {
+            "labels": [label_fmt(edges[i]) for i in range(n)],
+            "opened": opened_counts,
+            "completed": completed_counts,
+        }
+
+    # "%-d" isn't portable to Windows, so strip the zero-pad by hand.
+    def fmt_day(d):
+        return d.strftime("%b %d").replace(" 0", " ")
+
+    def fmt_month(d):
+        return d.strftime("%b '%y")
+
+    def add_months(year, month, delta):
+        m = month - 1 + delta
+        return year + m // 12, m % 12 + 1
+
+    today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    day_edges = [today - timedelta(days=TREND_DAYS - i) for i in range(TREND_DAYS + 1)]
     week_edges = [now - timedelta(weeks=TREND_WEEKS - i) for i in range(TREND_WEEKS + 1)]
-    opened_counts = [0] * TREND_WEEKS
-    completed_counts = [0] * TREND_WEEKS
 
-    def bucket_of(dt):
-        for i in range(TREND_WEEKS):
-            if week_edges[i] <= dt < week_edges[i + 1]:
-                return i
-        return None
-
-    for issue in open_issues + done_issues:
-        created = parse_dt_safe(issue["fields"]["created"])
-        if created:
-            i = bucket_of(created)
-            if i is not None:
-                opened_counts[i] += 1
-
-    for issue in done_issues:
-        resolved = parse_dt_safe(issue["fields"].get("resolutiondate"))
-        if resolved:
-            i = bucket_of(resolved)
-            if i is not None:
-                completed_counts[i] += 1
+    next_y, next_m = add_months(now.year, now.month, 1)
+    month_edges = []
+    for i in range(TREND_MONTHS + 1):
+        y, m = add_months(next_y, next_m, -(TREND_MONTHS - i))
+        month_edges.append(datetime(y, m, 1, tzinfo=timezone.utc))
 
     trend = {
-        # "%-d" isn't portable to Windows, so strip the zero-pad by hand.
-        "weeks": [
-            week_edges[i].strftime("%b %d").replace(" 0", " ")
-            for i in range(TREND_WEEKS)
-        ],
-        "opened": opened_counts,
-        "completed": completed_counts,
+        "day": build_trend(day_edges, fmt_day),
+        "week": build_trend(week_edges, fmt_day),
+        "month": build_trend(month_edges, fmt_month),
     }
 
     workload_detail = []

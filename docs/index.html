@@ -241,6 +241,24 @@
   }
 
   /* progression (opened vs completed) trend chart */
+  .trend-heading{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:1rem;
+    flex-wrap:wrap;
+  }
+  .trend-heading h2{margin:0;}
+  #trend-granularity{
+    font-family:var(--font-body);
+    font-size:0.85rem;
+    color:var(--ink);
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    padding:0.3rem 0.6rem;
+    border-radius:3px;
+    cursor:pointer;
+  }
   .trend-legend{
     display:flex;
     gap:1.4rem;
@@ -417,8 +435,8 @@ function niceMax(v){
 }
 
 function buildTrendChart(trend){
-  const weeks = trend.weeks, opened = trend.opened, completed = trend.completed;
-  const n = weeks.length;
+  const labels = trend.labels, opened = trend.opened, completed = trend.completed;
+  const n = labels.length;
   const W = 760, H = 260, L = 34, R = 12, T = 14, B = 26;
   const plotW = W - L - R, plotH = H - T - B;
   const maxVal = niceMax(Math.max(1, ...opened, ...completed));
@@ -431,7 +449,7 @@ function buildTrendChart(trend){
       <text class="trend-axis-label" x="${L - 6}" y="${y(val)}" text-anchor="end" dominant-baseline="middle">${val}</text>`;
   }).join('');
 
-  const xLabels = weeks.map((w, i) => {
+  const xLabels = labels.map((w, i) => {
     if (n > 8 && i % 2 !== 0 && i !== n - 1) return '';
     return `<text class="trend-axis-label" x="${x(i)}" y="${H - 6}" text-anchor="middle">${escapeHtml(w)}</text>`;
   }).join('');
@@ -465,7 +483,7 @@ function attachTrendInteractivity(container, trend){
   const hit = svg.querySelector('[data-role="hit"]');
   const crosshair = svg.querySelector('[data-role="crosshair"]');
   const tooltip = container.querySelector('[data-role="tooltip"]');
-  const n = trend.weeks.length;
+  const n = trend.labels.length;
   const L = +svg.dataset.l, R = +svg.dataset.r, Wv = +svg.dataset.w, T = +svg.dataset.t;
   const plotW = Wv - L - R;
   const xAt = i => L + (n === 1 ? 0 : (i / (n - 1)) * plotW);
@@ -478,7 +496,7 @@ function attachTrendInteractivity(container, trend){
     tooltip.innerHTML = '';
     const date = document.createElement('div');
     date.className = 'tt-date';
-    date.textContent = trend.weeks[i];
+    date.textContent = trend.labels[i];
     tooltip.appendChild(date);
 
     [
@@ -631,14 +649,23 @@ function render(data){
     </section>
 
     <section>
-      <h2>Opened vs completed</h2>
-      <p class="hint">New tickets created each week vs. tickets marked done, last ${data.trend ? data.trend.weeks.length : 0} weeks.</p>
+      <div class="trend-heading">
+        <h2>Opened vs completed</h2>
+        ${data.trend ? `
+          <select id="trend-granularity" aria-label="Split by">
+            <option value="day">By day</option>
+            <option value="week" selected>By week</option>
+            <option value="month">By month</option>
+          </select>
+        ` : ''}
+      </div>
+      <p class="hint" id="trend-hint"></p>
       <div class="trend-legend">
         <span class="item"><span class="swatch" style="border-top-color:var(--ochre)"></span>Opened</span>
         <span class="item"><span class="swatch" style="border-top-color:var(--good);border-top-style:dashed"></span>Completed</span>
       </div>
       <div class="trend-wrap" id="trend-wrap">
-        ${data.trend ? buildTrendChart(data.trend) : '<div class="empty">No trend data yet.</div>'}
+        ${data.trend ? '' : '<div class="empty">No trend data yet.</div>'}
       </div>
     </section>
 
@@ -664,8 +691,26 @@ function render(data){
   `;
 
   if (data.trend){
-    attachTrendInteractivity(document.getElementById('trend-wrap'), data.trend);
+    mountTrend(data.trend);
   }
+}
+
+const GRANULARITY_NOUN = { day: 'day', week: 'week', month: 'month' };
+
+function mountTrend(trend){
+  const wrap = document.getElementById('trend-wrap');
+  const hint = document.getElementById('trend-hint');
+  const select = document.getElementById('trend-granularity');
+
+  function draw(gran){
+    const series = trend[gran];
+    wrap.innerHTML = buildTrendChart(series);
+    attachTrendInteractivity(wrap, series);
+    hint.textContent = `New tickets created each ${GRANULARITY_NOUN[gran]} vs. tickets marked done, last ${series.labels.length} ${GRANULARITY_NOUN[gran]}s.`;
+  }
+
+  draw('week');
+  select.addEventListener('change', e => draw(e.target.value));
 }
 
 function escapeHtml(str){
