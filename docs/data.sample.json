@@ -1,0 +1,120 @@
+{
+  "generated_at": "2026-09-17T09:00:00+00:00",
+  "project_key": "DSG",
+  "recent_window_days": 90,
+  "stale_threshold_days": 180,
+  "summary": {
+    "open_total": 46,
+    "done_recent_total": 47,
+    "stale_backlog_total": 3,
+    "avg_turnaround_days": 6.4,
+    "median_turnaround_days": 2.1
+  },
+  "status_breakdown": [
+    { "status": "To Do", "count": 12 },
+    { "status": "In Progress", "count": 18 },
+    { "status": "In Review", "count": 9 },
+    { "status": "Paused", "count": 7 }
+  ],
+  "type_breakdown": [
+    { "tag": "Other", "count": 13 },
+    { "tag": "UI / Dashboard", "count": 10 },
+    { "tag": "Website / Landing", "count": 10 },
+    { "tag": "Branding / Print", "count": 7 },
+    { "tag": "Illustration / Graphics", "count": 6 }
+  ],
+  "trend": {
+    "weeks": ["Jul 21", "Jul 28", "Aug 4", "Aug 11", "Aug 18", "Aug 25", "Sep 1", "Sep 8"],
+    "opened": [5, 7, 4, 6, 8, 5, 9, 6],
+    "completed": [3, 5, 6, 4, 7, 6, 8, 7]
+  },
+  "workload": [
+    { "name": "Pavel Savinskiy", "open": 16, "done_recent": 14 },
+    { "name": "Sergey Baranov", "open": 15, "done_recent": 21 },
+    { "name": "Unassigned", "open": 8, "done_recent": 3 },
+    { "name": "Vlada", "open": 7, "done_recent": 9 }
+  ],
+  "workload_detail": [
+    {
+      "name": "Pavel Savinskiy",
+      "statuses": [
+        { "status": "In Review", "total": 6, "types": [
+          { "tag": "UI / Dashboard", "count": 5 },
+          { "tag": "Website / Landing", "count": 1 }
+        ]},
+        { "status": "In Progress", "total": 5, "types": [
+          { "tag": "UI / Dashboard", "count": 3 },
+          { "tag": "Website / Landing", "count": 2 }
+        ]},
+        { "status": "To Do", "total": 3, "types": [
+          { "tag": "UI / Dashboard", "count": 1 },
+          { "tag": "Illustration / Graphics", "count": 1 },
+          { "tag": "Other", "count": 1 }
+        ]},
+        { "status": "Paused", "total": 2, "types": [
+          { "tag": "UI / Dashboard", "count": 1 },
+          { "tag": "Other", "count": 1 }
+        ]}
+      ]
+    },
+    {
+      "name": "Sergey Baranov",
+      "statuses": [
+        { "status": "In Progress", "total": 7, "types": [
+          { "tag": "Website / Landing", "count": 4 },
+          { "tag": "Branding / Print", "count": 3 }
+        ]},
+        { "status": "To Do", "total": 4, "types": [
+          { "tag": "Branding / Print", "count": 2 },
+          { "tag": "Other", "count": 2 }
+        ]},
+        { "status": "In Review", "total": 2, "types": [
+          { "tag": "Branding / Print", "count": 2 }
+        ]},
+        { "status": "Paused", "total": 2, "types": [
+          { "tag": "Website / Landing", "count": 1 },
+          { "tag": "Other", "count": 1 }
+        ]}
+      ]
+    },
+    {
+      "name": "Unassigned",
+      "statuses": [
+        { "status": "In Progress", "total": 3, "types": [
+          { "tag": "Website / Landing", "count": 2 },
+          { "tag": "Other", "count": 1 }
+        ]},
+        { "status": "To Do", "total": 3, "types": [
+          { "tag": "Other", "count": 3 }
+        ]},
+        { "status": "Paused", "total": 2, "types": [
+          { "tag": "Other", "count": 2 }
+        ]}
+      ]
+    },
+    {
+      "name": "Vlada",
+      "statuses": [
+        { "status": "In Progress", "total": 3, "types": [
+          { "tag": "Illustration / Graphics", "count": 2 },
+          { "tag": "Other", "count": 1 }
+        ]},
+        { "status": "To Do", "total": 2, "types": [
+          { "tag": "Illustration / Graphics", "count": 1 },
+          { "tag": "Other", "count": 1 }
+        ]},
+        { "status": "In Review", "total": 1, "types": [
+          { "tag": "Illustration / Graphics", "count": 1 }
+        ]},
+        { "status": "Paused", "total": 1, "types": [
+          { "tag": "Illustration / Graphics", "count": 1 }
+        ]}
+      ]
+    }
+  ],
+  "stale_tickets": [
+    { "key": "SAMPLE-1", "summary": "(placeholder) dashboard redesign", "assignee": "Pavel Savinskiy", "tag": "UI / Dashboard", "age_days": 240, "url": null },
+    { "key": "SAMPLE-2", "summary": "(placeholder) unnamed task", "assignee": "Pavel Savinskiy", "tag": "Other", "age_days": 210, "url": null },
+    { "key": "SAMPLE-3", "summary": "(placeholder) marketing site update", "assignee": "Pavel Savinskiy", "tag": "Website / Landing", "age_days": 195, "url": null }
+  ]
+}

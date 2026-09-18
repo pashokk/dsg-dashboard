@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSG — Design Ops Board</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2430;
+    --ink-soft:#3B4759;
+    --paper:#EDEBE0;
+    --paper-raised:#F6F4EB;
+    --line:#C9C4B2;
+    --stamp:#C1442D;
+    --ochre:#B8862E;
+    --good:#3E6B54;
+    --violet:#6B5CA5;
+    --font-display: "Newsreader", Georgia, serif;
+    --font-body: "Work Sans", -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#EDEBE0;
+      --ink-soft:#C9C4B2;
+      --paper:#1B1E22;
+      --paper-raised:#242830;
+      --line:#3B4048;
+      --stamp:#E06A50;
+      --ochre:#D9A441;
+      --good:#5FA080;
+      --violet:#A08FD0;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#EDEBE0;
+    --ink-soft:#C9C4B2;
+    --paper:#1B1E22;
+    --paper-raised:#242830;
+    --line:#3B4048;
+    --stamp:#E06A50;
+    --ochre:#D9A441;
+    --good:#5FA080;
+    --violet:#A08FD0;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+
+  .wrap{max-width:1080px;margin:0 auto;padding:2.5rem 1.5rem 5rem;}
+
+  header.masthead{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    gap:1rem;
+    border-bottom:3px solid var(--ink);
+    padding-bottom:1rem;
+    margin-bottom:2.2rem;
+  }
+  header.masthead h1{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:2.6rem;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  header.masthead .sub{
+    color:var(--ink-soft);
+    font-size:0.95rem;
+  }
+  header.masthead .meta{
+    text-align:right;
+    font-size:0.85rem;
+    color:var(--ink-soft);
+  }
+  header.masthead .meta strong{color:var(--ink);}
+
+  /* --- stat strip: ticket-stub styling, not identical rounded cards --- */
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:0;
+    border:1px solid var(--line);
+    margin-bottom:2.6rem;
+  }
+  .stat{
+    padding:1.2rem 1.3rem;
+    border-right:1px solid var(--line);
+    position:relative;
+  }
+  .stat:last-child{border-right:none;}
+  .stat .n{
+    font-family:var(--font-display);
+    font-size:2.3rem;
+    font-weight:600;
+    display:block;
+    line-height:1;
+  }
+  .stat .l{
+    font-size:0.82rem;
+    color:var(--ink-soft);
+    margin-top:0.5rem;
+    display:block;
+  }
+  .stat.alert .n{color:var(--stamp);}
+  .stat.good .n{color:var(--good);}
+
+  section{margin-bottom:2.8rem;}
+  section > h2{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:1.35rem;
+    margin:0 0 0.2rem;
+  }
+  section > .hint{
+    color:var(--ink-soft);
+    font-size:0.88rem;
+    margin:0 0 1.1rem;
+    max-width:60ch;
+  }
+
+  .grid-two{
+    display:grid;
+    grid-template-columns:1.3fr 1fr;
+    gap:2.4rem;
+  }
+  @media (max-width:800px){
+    .grid-two{grid-template-columns:1fr;}
+    .stats{grid-template-columns:repeat(2,1fr);}
+    .stat:nth-child(2){border-right:none;}
+  }
+
+  /* workload bars */
+  .workload-row{
+    display:grid;
+    grid-template-columns:120px 1fr 3.6rem;
+    align-items:center;
+    gap:0.8rem;
+    padding:0.55rem 0;
+    border-bottom:1px solid var(--line);
+    font-size:0.9rem;
+  }
+  .workload-row:first-child{border-top:1px solid var(--line);}
+  .workload-row .name{font-weight:500;}
+  .bar-track{
+    height:0.55rem;
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    position:relative;
+  }
+  .bar-fill{
+    height:100%;
+    background:var(--ink);
+  }
+  .workload-row .count{text-align:right;color:var(--ink-soft);}
+
+  /* per-person status x type breakdown */
+  details.workload-detail{
+    border-bottom:1px solid var(--line);
+    padding:0.35rem 0;
+  }
+  details.workload-detail summary{
+    cursor:pointer;
+    font-size:0.85rem;
+    color:var(--ink-soft);
+    padding:0.25rem 0;
+  }
+  details.workload-detail summary::marker{color:var(--ink-soft);}
+  .detail-status-row{
+    display:grid;
+    grid-template-columns:100px 2.2rem 1fr;
+    align-items:baseline;
+    gap:0.7rem;
+    padding:0.3rem 0 0.3rem 1.2rem;
+    font-size:0.82rem;
+  }
+  .detail-status-label{color:var(--ink-soft);}
+  .detail-status-total{font-weight:600;}
+  .tag-chips{display:flex;flex-wrap:wrap;gap:0.3rem;}
+  .tag-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:0.35rem;
+    padding:0.12rem 0.5rem;
+    border:1px solid var(--line);
+    border-radius:999px;
+    font-size:0.76rem;
+    white-space:nowrap;
+  }
+  .tag-chip::before{
+    content:"";
+    width:0.5rem;
+    height:0.5rem;
+    border-radius:50%;
+    background:var(--chip, var(--ink-soft));
+    flex-shrink:0;
+  }
+
+  /* progression (opened vs completed) trend chart */
+  .trend-legend{
+    display:flex;
+    gap:1.4rem;
+    font-size:0.85rem;
+    color:var(--ink-soft);
+    margin-bottom:1rem;
+  }
+  .trend-legend .item{display:flex;align-items:center;gap:0.5rem;}
+  .trend-legend .swatch{width:18px;height:0;border-top:2px solid var(--line);display:inline-block;}
+  .trend-wrap{position:relative;}
+  .trend-svg{width:100%;height:auto;display:block;overflow:visible;}
+  .trend-gridline{stroke:var(--line);stroke-width:1;}
+  .trend-axis-label{fill:var(--ink-soft);font-size:10px;font-family:var(--font-body);}
+  .trend-endlabel{fill:var(--ink);font-size:11px;font-weight:600;font-family:var(--font-body);}
+  .trend-crosshair{stroke:var(--ink-soft);stroke-width:1;opacity:0;pointer-events:none;}
+  .trend-hit{fill:transparent;}
+  .trend-tooltip{
+    position:absolute;
+    pointer-events:none;
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    padding:0.5rem 0.7rem;
+    font-size:0.8rem;
+    border-radius:3px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.18);
+    transform:translate(-50%,-100%);
+    white-space:nowrap;
+    opacity:0;
+    transition:opacity .1s;
+    z-index:2;
+  }
+  .trend-tooltip.visible{opacity:1;}
+  .trend-tooltip .tt-date{color:var(--ink-soft);margin-bottom:0.3rem;}
+  .trend-tooltip .tt-row{display:flex;align-items:center;gap:0.5rem;}
+  .trend-tooltip .tt-key{width:14px;height:0;border-top:2px solid;display:inline-block;}
+  .trend-tooltip .tt-name{color:var(--ink-soft);}
+  .trend-tooltip .tt-val{font-weight:600;margin-left:auto;padding-left:0.8rem;}
+
+  /* status breakdown */
+  .status-row{
+    display:grid;
+    grid-template-columns:110px 1fr 2.4rem;
+    align-items:center;
+    gap:0.8rem;
+    padding:0.5rem 0;
+    font-size:0.88rem;
+  }
+  .status-row .label{color:var(--ink-soft);}
+  .status-row .bar-fill{background:var(--ochre);}
+  .status-row.done .bar-fill{background:var(--good);}
+  .status-row .count{text-align:right;}
+
+  /* stale ticket list */
+  table.stale{
+    width:100%;
+    border-collapse:collapse;
+    font-size:0.88rem;
+  }
+  table.stale th{
+    text-align:left;
+    font-weight:600;
+    color:var(--ink-soft);
+    font-size:0.78rem;
+    text-transform:none;
+    border-bottom:2px solid var(--ink);
+    padding:0.4rem 0.6rem 0.4rem 0;
+  }
+  table.stale td{
+    padding:0.55rem 0.6rem 0.55rem 0;
+    border-bottom:1px solid var(--line);
+    vertical-align:top;
+  }
+  table.stale tr:last-child td{border-bottom:none;}
+  table.stale .key{
+    font-weight:600;
+    white-space:nowrap;
+  }
+  table.stale .age{
+    color:var(--stamp);
+    font-weight:600;
+    white-space:nowrap;
+  }
+  table.stale .summary-cell{color:var(--ink-soft);}
+
+  .empty, .error{
+    padding:2rem;
+    border:1px dashed var(--line);
+    color:var(--ink-soft);
+    text-align:center;
+    font-size:0.95rem;
+  }
+
+  footer{
+    color:var(--ink-soft);
+    font-size:0.8rem;
+    border-top:1px solid var(--line);
+    padding-top:1.2rem;
+    margin-top:3rem;
+  }
+
+  .sample-banner{
+    background:var(--stamp);
+    color:var(--paper-raised);
+    font-weight:600;
+    font-size:0.9rem;
+    padding:0.8rem 1.1rem;
+    margin-bottom:1.6rem;
+    border:1px solid var(--stamp);
+  }
+  .sample-banner strong{text-decoration:underline;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div>
+      <h1>Design Ops Board</h1>
+      <div class="sub">DSG project — workload, turnaround, and what's been sitting too long</div>
+    </div>
+    <div class="meta">
+      Last pulled<br>
+      <strong id="generated-at">—</strong>
+    </div>
+  </header>
+
+  <div id="content">
+    <div class="empty">Loading…</div>
+  </div>
+
+  <footer>
+    Data refreshes when <code>scripts/fetch_data.py</code> runs (see the repo's GitHub Action). Numbers reflect the DSG Jira project only.
+  </footer>
+</div>
+
+<script>
+async function loadData(){
+  const el = document.getElementById('content');
+  let data;
+  try {
+    const res = await fetch('data.json', {cache: 'no-store'});
+    if (!res.ok) throw new Error('no data.json yet');
+    data = await res.json();
+  } catch (e) {
+    try {
+      const res2 = await fetch('data.sample.json', {cache: 'no-store'});
+      data = await res2.json();
+      data.__sample = true;
+    } catch (e2) {
+      el.innerHTML = '<div class="error">No data yet. Run <code>python scripts/fetch_data.py</code> with your Jira credentials to generate <code>docs/data.json</code>.</div>';
+      return;
+    }
+  }
+  render(data);
+}
+
+const TAG_COLOR = {
+  'UI / Dashboard': 'var(--stamp)',
+  'Website / Landing': 'var(--ochre)',
+  'Illustration / Graphics': 'var(--good)',
+  'Branding / Print': 'var(--violet)',
+  'Video / Motion': 'var(--ochre)',
+  'Other': 'var(--ink-soft)',
+};
+
+function niceMax(v){
+  if (v <= 0) return 1;
+  const steps = [1,2,5,10,20,25,50,100,200,250,500,1000];
+  for (const s of steps) if (v <= s) return s;
+  const mag = Math.pow(10, Math.floor(Math.log10(v)));
+  return Math.ceil(v / mag) * mag;
+}
+
+function buildTrendChart(trend){
+  const weeks = trend.weeks, opened = trend.opened, completed = trend.completed;
+  const n = weeks.length;
+  const W = 760, H = 260, L = 34, R = 12, T = 14, B = 26;
+  const plotW = W - L - R, plotH = H - T - B;
+  const maxVal = niceMax(Math.max(1, ...opened, ...completed));
+  const x = i => L + (n === 1 ? 0 : (i / (n - 1)) * plotW);
+  const y = v => T + plotH - (v / maxVal) * plotH;
+
+  const gridY = [0, 0.5, 1].map(f => {
+    const val = Math.round(maxVal * f);
+    return `<line class="trend-gridline" x1="${L}" x2="${W - R}" y1="${y(val)}" y2="${y(val)}"/>
+      <text class="trend-axis-label" x="${L - 6}" y="${y(val)}" text-anchor="end" dominant-baseline="middle">${val}</text>`;
+  }).join('');
+
+  const xLabels = weeks.map((w, i) => {
+    if (n > 8 && i % 2 !== 0 && i !== n - 1) return '';
+    return `<text class="trend-axis-label" x="${x(i)}" y="${H - 6}" text-anchor="middle">${escapeHtml(w)}</text>`;
+  }).join('');
+
+  const linePath = arr => arr.map((v, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+
+  const seriesSvg = (arr, colorVar) => `
+    <path d="${linePath(arr)}" fill="none" stroke="${colorVar}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${colorVar === 'var(--good)' ? 'stroke-dasharray="6 4"' : ''}/>
+    ${arr.map((v, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="4" fill="${colorVar}" stroke="var(--paper-raised)" stroke-width="2"/>`).join('')}
+    <text class="trend-endlabel" x="${x(n - 1) + 8}" y="${y(arr[n - 1])}" dominant-baseline="middle">${arr[n - 1]}</text>
+  `;
+
+  const svg = `
+    <svg class="trend-svg" viewBox="0 0 ${W + 34} ${H}" data-w="${W}" data-h="${H}" data-l="${L}" data-r="${R}" data-t="${T}" data-b="${B}" data-n="${n}">
+      ${gridY}
+      ${xLabels}
+      ${seriesSvg(opened, 'var(--ochre)')}
+      ${seriesSvg(completed, 'var(--good)')}
+      <line class="trend-crosshair" data-role="crosshair" x1="0" x2="0" y1="${T}" y2="${T + plotH}"/>
+      <rect class="trend-hit" data-role="hit" x="${L}" y="${T}" width="${plotW}" height="${plotH}"/>
+    </svg>
+    <div class="trend-tooltip" data-role="tooltip"></div>
+  `;
+
+  return svg;
+}
+
+function attachTrendInteractivity(container, trend){
+  const svg = container.querySelector('svg.trend-svg');
+  if (!svg) return;
+  const hit = svg.querySelector('[data-role="hit"]');
+  const crosshair = svg.querySelector('[data-role="crosshair"]');
+  const tooltip = container.querySelector('[data-role="tooltip"]');
+  const n = trend.weeks.length;
+  const L = +svg.dataset.l, R = +svg.dataset.r, Wv = +svg.dataset.w, T = +svg.dataset.t;
+  const plotW = Wv - L - R;
+  const xAt = i => L + (n === 1 ? 0 : (i / (n - 1)) * plotW);
+
+  function showAt(i){
+    crosshair.setAttribute('x1', xAt(i));
+    crosshair.setAttribute('x2', xAt(i));
+    crosshair.style.opacity = 1;
+
+    tooltip.innerHTML = '';
+    const date = document.createElement('div');
+    date.className = 'tt-date';
+    date.textContent = trend.weeks[i];
+    tooltip.appendChild(date);
+
+    [
+      ['Opened', trend.opened[i], 'var(--ochre)', 'none'],
+      ['Completed', trend.completed[i], 'var(--good)', '4px 3px'],
+    ].forEach(([name, val, color, dash]) => {
+      const row = document.createElement('div');
+      row.className = 'tt-row';
+      const key = document.createElement('span');
+      key.className = 'tt-key';
+      key.style.borderTopColor = color;
+      key.style.borderTopStyle = dash === 'none' ? 'solid' : 'dashed';
+      const nm = document.createElement('span');
+      nm.className = 'tt-name';
+      nm.textContent = name;
+      const vl = document.createElement('span');
+      vl.className = 'tt-val';
+      vl.textContent = val;
+      row.append(key, nm, vl);
+      tooltip.appendChild(row);
+    });
+
+    const pct = n === 1 ? 0 : i / (n - 1);
+    tooltip.style.left = (pct * 100) + '%';
+    tooltip.style.top = '0px';
+    tooltip.classList.add('visible');
+  }
+
+  function hide(){
+    crosshair.style.opacity = 0;
+    tooltip.classList.remove('visible');
+  }
+
+  svg.addEventListener('pointermove', (e) => {
+    const rect = svg.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width * (+svg.dataset.w + 34);
+    let closest = 0, best = Infinity;
+    for (let i = 0; i < n; i++){
+      const d = Math.abs(xAt(i) - px);
+      if (d < best){ best = d; closest = i; }
+    }
+    showAt(closest);
+  });
+  svg.addEventListener('pointerleave', hide);
+}
+
+function render(data){
+  document.getElementById('generated-at').textContent =
+    new Date(data.generated_at).toLocaleString() + (data.__sample ? '  (sample data)' : '');
+
+  const s = data.summary;
+  const maxOpen = Math.max(1, ...data.workload.map(w => w.open));
+  const maxStatus = Math.max(1, ...data.status_breakdown.map(st => st.count));
+  const maxType = Math.max(1, ...(data.type_breakdown || []).map(t => t.count));
+
+  const statsHtml = `
+    <div class="stats">
+      <div class="stat"><span class="n">${s.open_total}</span><span class="l">open tickets</span></div>
+      <div class="stat good"><span class="n">${s.done_recent_total}</span><span class="l">closed, last ${data.recent_window_days}d</span></div>
+      <div class="stat alert"><span class="n">${s.stale_backlog_total}</span><span class="l">untouched &gt; ${data.stale_threshold_days}d</span></div>
+      <div class="stat"><span class="n">${s.median_turnaround_days ?? '—'}d</span><span class="l">median turnaround</span></div>
+    </div>
+  `;
+
+  const workloadHtml = data.workload.map(w => `
+    <div class="workload-row">
+      <span class="name">${w.name}</span>
+      <span class="bar-track"><span class="bar-fill" style="width:${(w.open / maxOpen * 100).toFixed(0)}%"></span></span>
+      <span class="count">${w.open} open</span>
+    </div>
+  `).join('');
+
+  const statusHtml = data.status_breakdown.map(st => `
+    <div class="status-row ${st.status.toLowerCase() === 'done' ? 'done' : ''}">
+      <span class="label">${st.status}</span>
+      <span class="bar-track"><span class="bar-fill" style="width:${(st.count / maxStatus * 100).toFixed(0)}%"></span></span>
+      <span class="count">${st.count}</span>
+    </div>
+  `).join('');
+
+  const typeHtml = (data.type_breakdown || []).map(t => `
+    <div class="status-row">
+      <span class="label">${escapeHtml(t.tag)}</span>
+      <span class="bar-track"><span class="bar-fill" style="width:${(t.count / maxType * 100).toFixed(0)}%;background:${TAG_COLOR[t.tag] || 'var(--ink-soft)'}"></span></span>
+      <span class="count">${t.count}</span>
+    </div>
+  `).join('');
+
+  const workloadDetailHtml = (data.workload_detail || []).map(person => `
+    <details class="workload-detail">
+      <summary>${escapeHtml(person.name)} — breakdown by status &amp; type</summary>
+      ${person.statuses.map(st => `
+        <div class="detail-status-row">
+          <span class="detail-status-label">${escapeHtml(st.status)}</span>
+          <span class="detail-status-total">${st.total}</span>
+          <span class="tag-chips">
+            ${st.types.map(t => `<span class="tag-chip" style="--chip:${TAG_COLOR[t.tag] || 'var(--ink-soft)'}">${escapeHtml(t.tag)} · ${t.count}</span>`).join('')}
+          </span>
+        </div>
+      `).join('')}
+    </details>
+  `).join('');
+
+  const staleHtml = data.stale_tickets.length ? `
+    <table class="stale">
+      <thead><tr><th>Ticket</th><th>Summary</th><th>Assignee</th><th>Type</th><th>Age</th></tr></thead>
+      <tbody>
+        ${data.stale_tickets.map(t => `
+          <tr>
+            <td class="key">${t.url ? `<a href="${t.url}" target="_blank" rel="noopener">${escapeHtml(t.key)}</a>` : escapeHtml(t.key)}</td>
+            <td class="summary-cell">${escapeHtml(t.summary)}</td>
+            <td>${escapeHtml(t.assignee)}</td>
+            <td>${escapeHtml(t.tag || 'Other')}</td>
+            <td class="age">${Math.round(t.age_days / 30)} mo</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  ` : '<div class="empty">Nothing stale right now.</div>';
+
+  const bannerHtml = data.__sample ? `
+    <div class="sample-banner">
+      This is <strong>made-up placeholder data</strong>, not real Jira tickets — including the ticket keys below.
+      Run <code>python scripts/fetch_data.py</code> with a real Jira token to load actual DSG data.
+    </div>
+  ` : '';
+
+  document.getElementById('content').innerHTML = `
+    ${bannerHtml}
+    ${statsHtml}
+
+    <section>
+      <h2>Workload</h2>
+      <p class="hint">Open tickets per person right now. Longer bar means more sitting on their plate.</p>
+      ${workloadHtml}
+    </section>
+
+    <section>
+      <h2>Opened vs completed</h2>
+      <p class="hint">New tickets created each week vs. tickets marked done, last ${data.trend ? data.trend.weeks.length : 0} weeks.</p>
+      <div class="trend-legend">
+        <span class="item"><span class="swatch" style="border-top-color:var(--ochre)"></span>Opened</span>
+        <span class="item"><span class="swatch" style="border-top-color:var(--good);border-top-style:dashed"></span>Completed</span>
+      </div>
+      <div class="trend-wrap" id="trend-wrap">
+        ${data.trend ? buildTrendChart(data.trend) : '<div class="empty">No trend data yet.</div>'}
+      </div>
+    </section>
+
+    <section>
+      <h2>Workload — by status &amp; type</h2>
+      <p class="hint">Each person's open tickets, split by status, tagged by the kind of request (heuristic keyword match on summary/labels — see <code>TAG_RULES</code> in <code>fetch_data.py</code>). Expand a name to see e.g. whether their In Review load is mostly UI/Dashboard work or something else.</p>
+      ${workloadDetailHtml}
+    </section>
+
+    <div class="grid-two">
+      <section>
+        <h2>Stale</h2>
+        <p class="hint">Tickets still in To Do, untouched for over ${data.stale_threshold_days} days. Candidates to close or re-prioritise.</p>
+        ${staleHtml}
+      </section>
+
+      <section>
+        <h2>Status breakdown</h2>
+        <p class="hint">Everything currently open, by status.</p>
+        ${statusHtml}
+      </section>
+    </div>
+
+    <section>
+      <h2>Request types</h2>
+      <p class="hint">Everything currently open, by tagged type. Same heuristic as the breakdown above, rolled up across everyone.</p>
+      ${typeHtml}
+    </section>
+  `;
+
+  if (data.trend){
+    attachTrendInteractivity(document.getElementById('trend-wrap'), data.trend);
+  }
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str ?? '';
+  return d.innerHTML;
+}
+
+loadData();
+</script>
+</body>
+</html>
