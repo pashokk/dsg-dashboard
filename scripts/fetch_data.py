@@ -55,6 +55,7 @@ EXCLUDED_ASSIGNEES = ["Alexander Pleshkan", "Marc Llobet Rodríguez"]
 # "build"; adjust freely, this is just keyword matching, not ML.
 TAG_RULES = [
     ("UI / Dashboard", ["dashboard", r"\bui\b", r"\bux\b", "interface", "design system", "component"]),
+    ("Presentations / Decks", ["presentation", "deck", "one-pager", "1-pager", "onepager", "media kit", "slide"]),
     ("Website / Landing", ["website", "landing", "webpage", r"\bweb\b", r"\bsite\b"]),
     ("Illustration / Graphics", ["illustration", "icon", "graphic", "artwork", "banner", "asset"]),
     ("Branding / Print", ["logo", "brand", "print", "poster", "brochure", "packaging"]),

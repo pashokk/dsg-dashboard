@@ -19,6 +19,8 @@
     --ochre:#B8862E;
     --good:#3E6B54;
     --violet:#6B5CA5;
+    --info:#3E6B94;
+    --teal:#2E7A73;
     --font-display: "Newsreader", Georgia, serif;
     --font-body: "Work Sans", -apple-system, sans-serif;
   }
@@ -33,6 +35,8 @@
       --ochre:#D9A441;
       --good:#5FA080;
       --violet:#A08FD0;
+      --info:#6FA8D9;
+      --teal:#4FB0A6;
     }
   }
   :root[data-theme="dark"]{
@@ -45,6 +49,8 @@
     --ochre:#D9A441;
     --good:#5FA080;
     --violet:#A08FD0;
+    --info:#6FA8D9;
+    --teal:#4FB0A6;
   }
 
   *{box-sizing:border-box;}
@@ -388,10 +394,11 @@ async function loadData(){
 
 const TAG_COLOR = {
   'UI / Dashboard': 'var(--stamp)',
+  'Presentations / Decks': 'var(--info)',
   'Website / Landing': 'var(--ochre)',
   'Illustration / Graphics': 'var(--good)',
   'Branding / Print': 'var(--violet)',
-  'Video / Motion': 'var(--ochre)',
+  'Video / Motion': 'var(--teal)',
   'Other': 'var(--ink-soft)',
 };
 
@@ -530,7 +537,7 @@ function render(data){
     </div>
   `;
 
-  const TAG_ORDER = ['UI / Dashboard', 'Website / Landing', 'Illustration / Graphics', 'Branding / Print', 'Video / Motion', 'Other'];
+  const TAG_ORDER = ['UI / Dashboard', 'Presentations / Decks', 'Website / Landing', 'Illustration / Graphics', 'Branding / Print', 'Video / Motion', 'Other'];
   const tagsPresent = new Set();
   data.workload.forEach(w => (w.by_type || []).forEach(t => tagsPresent.add(t.tag)));
   const typeLegendHtml = TAG_ORDER.filter(t => tagsPresent.has(t)).map(t => `

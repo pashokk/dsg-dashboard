@@ -17,11 +17,12 @@
     { "status": "Paused", "count": 7 }
   ],
   "type_breakdown": [
-    { "tag": "Other", "count": 13 },
-    { "tag": "UI / Dashboard", "count": 10 },
+    { "tag": "Other", "count": 9 },
+    { "tag": "UI / Dashboard", "count": 8 },
     { "tag": "Website / Landing", "count": 10 },
     { "tag": "Branding / Print", "count": 7 },
-    { "tag": "Illustration / Graphics", "count": 6 }
+    { "tag": "Illustration / Graphics", "count": 6 },
+    { "tag": "Presentations / Decks", "count": 4 }
   ],
   "trend": {
     "weeks": ["Jul 21", "Jul 28", "Aug 4", "Aug 11", "Aug 18", "Aug 25", "Sep 1", "Sep 8"],
@@ -30,10 +31,11 @@
   },
   "workload": [
     { "name": "Pavel Savinskiy", "open": 16, "done_recent": 14, "by_type": [
-      { "tag": "UI / Dashboard", "count": 10 },
-      { "tag": "Website / Landing", "count": 3 },
+      { "tag": "UI / Dashboard", "count": 8 },
+      { "tag": "Presentations / Decks", "count": 4 },
+      { "tag": "Website / Landing", "count": 2 },
       { "tag": "Illustration / Graphics", "count": 1 },
-      { "tag": "Other", "count": 2 }
+      { "tag": "Other", "count": 1 }
     ]},
     { "name": "Sergey Baranov", "open": 15, "done_recent": 21, "by_type": [
       { "tag": "Branding / Print", "count": 7 },
