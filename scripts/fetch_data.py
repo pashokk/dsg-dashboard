@@ -44,6 +44,11 @@ TREND_WEEKS = 12
 # excluded everywhere: counts, workload, stale detection, the trend chart.
 EXCLUDED_STATUSES = ["Backlog"]
 
+# People whose tickets shouldn't appear anywhere on this dashboard (not open
+# counts, not the trend chart, nothing) — e.g. people outside the core team
+# who show up as an assignee on a handful of tickets.
+EXCLUDED_ASSIGNEES = ["Alexander Pleshkan", "Marc Llobet Rodríguez"]
+
 # Heuristic tags for "what kind of request is this" — checked in order,
 # first match wins. Matched against the ticket summary + labels, lowercased.
 # Short/ambiguous keywords use word boundaries so e.g. "ui" doesn't match
@@ -186,12 +191,22 @@ def main():
         done_fields,
     )
 
+    def is_excluded_assignee(issue_fields):
+        assignee = issue_fields.get("assignee")
+        name = assignee["displayName"] if assignee else "Unassigned"
+        return name in EXCLUDED_ASSIGNEES
+
+    open_issues = [i for i in open_issues if not is_excluded_assignee(i["fields"])]
+    done_issues = [i for i in done_issues if not is_excluded_assignee(i["fields"])]
+
     # ---- open backlog breakdown ----
     status_counts = defaultdict(int)
     assignee_open = defaultdict(int)
     type_counts = defaultdict(int)
     # detail[assignee][status][tag] = count
     detail = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+    # assignee_type_counts[assignee][tag] = count, aggregated across all statuses
+    assignee_type_counts = defaultdict(lambda: defaultdict(int))
     stale_tickets = []
 
     for issue in open_issues:
@@ -206,6 +221,7 @@ def main():
         tag = classify_type(f["summary"], f.get("labels"))
         type_counts[tag] += 1
         detail[aname][status_name][tag] += 1
+        assignee_type_counts[aname][tag] += 1
 
         created = parse_dt_safe(f["created"])
         if status_name.lower() == "to do" and created and created < stale_cutoff:
@@ -247,6 +263,10 @@ def main():
             "name": p,
             "open": assignee_open.get(p, 0),
             "done_recent": assignee_done.get(p, 0),
+            "by_type": [
+                {"tag": t, "count": c}
+                for t, c in sorted(assignee_type_counts[p].items(), key=lambda kv: -kv[1])
+            ],
         }
         for p in people
     ]

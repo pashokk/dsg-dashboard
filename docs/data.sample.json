@@ -29,10 +29,25 @@
     "completed": [3, 5, 6, 4, 7, 6, 8, 7]
   },
   "workload": [
-    { "name": "Pavel Savinskiy", "open": 16, "done_recent": 14 },
-    { "name": "Sergey Baranov", "open": 15, "done_recent": 21 },
-    { "name": "Unassigned", "open": 8, "done_recent": 3 },
-    { "name": "Vlada", "open": 7, "done_recent": 9 }
+    { "name": "Pavel Savinskiy", "open": 16, "done_recent": 14, "by_type": [
+      { "tag": "UI / Dashboard", "count": 10 },
+      { "tag": "Website / Landing", "count": 3 },
+      { "tag": "Illustration / Graphics", "count": 1 },
+      { "tag": "Other", "count": 2 }
+    ]},
+    { "name": "Sergey Baranov", "open": 15, "done_recent": 21, "by_type": [
+      { "tag": "Branding / Print", "count": 7 },
+      { "tag": "Website / Landing", "count": 5 },
+      { "tag": "Other", "count": 3 }
+    ]},
+    { "name": "Unassigned", "open": 8, "done_recent": 3, "by_type": [
+      { "tag": "Website / Landing", "count": 2 },
+      { "tag": "Other", "count": 6 }
+    ]},
+    { "name": "Vlada", "open": 7, "done_recent": 9, "by_type": [
+      { "tag": "Illustration / Graphics", "count": 4 },
+      { "tag": "Other", "count": 3 }
+    ]}
   ],
   "workload_detail": [
     {

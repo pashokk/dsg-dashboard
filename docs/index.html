@@ -165,7 +165,27 @@
     height:100%;
     background:var(--ink);
   }
+  .bar-fill-stack{
+    height:100%;
+    display:flex;
+  }
+  .bar-seg{
+    height:100%;
+    box-shadow:1px 0 0 0 var(--paper-raised);
+  }
+  .bar-seg:last-child{box-shadow:none;}
   .workload-row .count{text-align:right;color:var(--ink-soft);}
+
+  .type-legend{
+    display:flex;
+    flex-wrap:wrap;
+    gap:0.9rem 1.2rem;
+    font-size:0.82rem;
+    color:var(--ink-soft);
+    margin-bottom:1rem;
+  }
+  .type-legend .item{display:flex;align-items:center;gap:0.4rem;}
+  .type-legend .dot{width:0.6rem;height:0.6rem;border-radius:50%;display:inline-block;}
 
   /* per-person status x type breakdown */
   details.workload-detail{
@@ -510,13 +530,24 @@ function render(data){
     </div>
   `;
 
-  const workloadHtml = data.workload.map(w => `
+  const TAG_ORDER = ['UI / Dashboard', 'Website / Landing', 'Illustration / Graphics', 'Branding / Print', 'Video / Motion', 'Other'];
+  const tagsPresent = new Set();
+  data.workload.forEach(w => (w.by_type || []).forEach(t => tagsPresent.add(t.tag)));
+  const typeLegendHtml = TAG_ORDER.filter(t => tagsPresent.has(t)).map(t => `
+    <span class="item"><span class="dot" style="background:${TAG_COLOR[t] || 'var(--ink-soft)'}"></span>${escapeHtml(t)}</span>
+  `).join('');
+
+  const workloadHtml = data.workload.map(w => {
+    const segments = (w.by_type && w.by_type.length) ? w.by_type : [{ tag: 'Other', count: w.open }];
+    const barSegHtml = segments.map(t => `<span class="bar-seg" title="${escapeHtml(t.tag)}: ${t.count}" style="width:${w.open ? (t.count / w.open * 100).toFixed(1) : 0}%;background:${TAG_COLOR[t.tag] || 'var(--ink-soft)'}"></span>`).join('');
+    return `
     <div class="workload-row">
-      <span class="name">${w.name}</span>
-      <span class="bar-track"><span class="bar-fill" style="width:${(w.open / maxOpen * 100).toFixed(0)}%"></span></span>
+      <span class="name">${escapeHtml(w.name)}</span>
+      <span class="bar-track"><span class="bar-fill-stack" style="width:${(w.open / maxOpen * 100).toFixed(0)}%">${barSegHtml}</span></span>
       <span class="count">${w.open} open</span>
     </div>
-  `).join('');
+  `;
+  }).join('');
 
   const statusHtml = data.status_breakdown.map(st => `
     <div class="status-row ${st.status.toLowerCase() === 'done' ? 'done' : ''}">
@@ -579,7 +610,8 @@ function render(data){
 
     <section>
       <h2>Workload</h2>
-      <p class="hint">Open tickets per person right now. Longer bar means more sitting on their plate.</p>
+      <p class="hint">Open tickets per person right now. Longer bar means more sitting on their plate; color shows what kind of work it is (hover a segment for the exact count).</p>
+      <div class="type-legend">${typeLegendHtml}</div>
       ${workloadHtml}
     </section>
 
