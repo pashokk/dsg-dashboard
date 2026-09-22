@@ -46,6 +46,19 @@ TREND_MONTHS = 12
 # excluded everywhere: counts, workload, stale detection, the trend chart.
 EXCLUDED_STATUSES = ["Backlog"]
 
+# Fixed left-to-right/top-to-bottom order for statuses everywhere they're
+# listed (status breakdown, each person's per-status detail) — the workflow
+# order, not sorted by ticket count, so the same status always lands in the
+# same place regardless of who has more or fewer tickets in it.
+STATUS_ORDER = ["To Do", "In Progress", "In Review", "Paused"]
+
+
+def status_sort_key(name):
+    try:
+        return (0, STATUS_ORDER.index(name))
+    except ValueError:
+        return (1, name)
+
 # People whose tickets shouldn't appear anywhere on this dashboard (not open
 # counts, not the trend chart, nothing) — e.g. people outside the core team
 # who show up as an assignee on a handful of tickets.
@@ -359,7 +372,7 @@ def main():
         for status_name, tagmap in detail[p].items():
             types = [{"tag": t, "count": c} for t, c in sorted(tagmap.items(), key=lambda kv: -kv[1])]
             statuses.append({"status": status_name, "total": sum(tagmap.values()), "types": types})
-        statuses.sort(key=lambda s: -s["total"])
+        statuses.sort(key=lambda s: status_sort_key(s["status"]))
         workload_detail.append({"name": p, "statuses": statuses})
 
     type_breakdown = [{"tag": t, "count": c} for t, c in sorted(type_counts.items(), key=lambda kv: -kv[1])]
@@ -377,7 +390,7 @@ def main():
             "median_turnaround_days": median_turnaround,
         },
         "status_breakdown": [
-            {"status": k, "count": v} for k, v in sorted(status_counts.items(), key=lambda kv: -kv[1])
+            {"status": k, "count": v} for k, v in sorted(status_counts.items(), key=lambda kv: status_sort_key(kv[0]))
         ],
         "workload": workload,
         "workload_detail": workload_detail,

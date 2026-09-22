@@ -67,18 +67,18 @@
     {
       "name": "Pavel Savinskiy",
       "statuses": [
-        { "status": "In Review", "total": 6, "types": [
-          { "tag": "UI / Dashboard", "count": 5 },
-          { "tag": "Website / Landing", "count": 1 }
+        { "status": "To Do", "total": 3, "types": [
+          { "tag": "UI / Dashboard", "count": 1 },
+          { "tag": "Illustration / Graphics", "count": 1 },
+          { "tag": "Other", "count": 1 }
         ]},
         { "status": "In Progress", "total": 5, "types": [
           { "tag": "UI / Dashboard", "count": 3 },
           { "tag": "Website / Landing", "count": 2 }
         ]},
-        { "status": "To Do", "total": 3, "types": [
-          { "tag": "UI / Dashboard", "count": 1 },
-          { "tag": "Illustration / Graphics", "count": 1 },
-          { "tag": "Other", "count": 1 }
+        { "status": "In Review", "total": 6, "types": [
+          { "tag": "UI / Dashboard", "count": 5 },
+          { "tag": "Website / Landing", "count": 1 }
         ]},
         { "status": "Paused", "total": 2, "types": [
           { "tag": "UI / Dashboard", "count": 1 },
@@ -89,13 +89,13 @@
     {
       "name": "Sergey Baranov",
       "statuses": [
-        { "status": "In Progress", "total": 7, "types": [
-          { "tag": "Website / Landing", "count": 4 },
-          { "tag": "Branding / Print", "count": 3 }
-        ]},
         { "status": "To Do", "total": 4, "types": [
           { "tag": "Branding / Print", "count": 2 },
           { "tag": "Other", "count": 2 }
+        ]},
+        { "status": "In Progress", "total": 7, "types": [
+          { "tag": "Website / Landing", "count": 4 },
+          { "tag": "Branding / Print", "count": 3 }
         ]},
         { "status": "In Review", "total": 2, "types": [
           { "tag": "Branding / Print", "count": 2 }
@@ -109,12 +109,12 @@
     {
       "name": "Unassigned",
       "statuses": [
+        { "status": "To Do", "total": 3, "types": [
+          { "tag": "Other", "count": 3 }
+        ]},
         { "status": "In Progress", "total": 3, "types": [
           { "tag": "Website / Landing", "count": 2 },
           { "tag": "Other", "count": 1 }
-        ]},
-        { "status": "To Do", "total": 3, "types": [
-          { "tag": "Other", "count": 3 }
         ]},
         { "status": "Paused", "total": 2, "types": [
           { "tag": "Other", "count": 2 }
@@ -124,12 +124,12 @@
     {
       "name": "Vlada",
       "statuses": [
-        { "status": "In Progress", "total": 3, "types": [
-          { "tag": "Illustration / Graphics", "count": 2 },
-          { "tag": "Other", "count": 1 }
-        ]},
         { "status": "To Do", "total": 2, "types": [
           { "tag": "Illustration / Graphics", "count": 1 },
+          { "tag": "Other", "count": 1 }
+        ]},
+        { "status": "In Progress", "total": 3, "types": [
+          { "tag": "Illustration / Graphics", "count": 2 },
           { "tag": "Other", "count": 1 }
         ]},
         { "status": "In Review", "total": 1, "types": [
