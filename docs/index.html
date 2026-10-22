@@ -625,7 +625,7 @@ function render(data){
   const statsHtml = `
     <div class="stats">
       <div class="stat"><span class="n">${s.open_total}</span><span class="l">open tickets</span></div>
-      <div class="stat good"><span class="n">${s.done_recent_total}</span><span class="l">closed, last ${data.recent_window_days}d</span></div>
+      <div class="stat good"><span class="n">${s.done_recent_total}</span><span class="l">closed, ${data.content_quarter ? escapeHtml(data.content_quarter.label) : 'this quarter'}</span></div>
       <div class="stat alert"><span class="n">${s.stale_backlog_total}</span><span class="l">untouched &gt; ${data.stale_threshold_days}d</span></div>
       <div class="stat"><span class="n">${s.median_turnaround_days ?? '—'}d</span><span class="l">median turnaround</span></div>
     </div>

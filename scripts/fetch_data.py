@@ -425,7 +425,7 @@ def main():
     quarter_start = datetime(now.year, q_month, 1, tzinfo=timezone.utc)
     quarter_label = f"Q{(q_month - 1) // 3 + 1} {now.year} (to date)"
 
-    quarter_done_fields = ["summary", "labels", "parent"]
+    quarter_done_fields = ["summary", "labels", "parent", "created", "resolutiondate"]
     quarter_done_issues = search_all_issues(
         f'project = {PROJECT_KEY} AND statusCategory = Done '
         f'AND resolutiondate >= "{quarter_start.strftime("%Y-%m-%d")}"{excluded_clause} '
@@ -436,6 +436,7 @@ def main():
 
     content_counts = defaultdict(int)
     quarter_type_counts = defaultdict(int)
+    quarter_turnaround_days = []
     for issue in quarter_done_issues:
         f = issue["fields"]
         parent = f.get("parent")
@@ -443,6 +444,17 @@ def main():
         for t in classify_content_types(f["summary"], f.get("labels"), parent_summary):
             content_counts[t] += 1
         quarter_type_counts[classify_type(f["summary"], f.get("labels"), parent_summary)] += 1
+        created = parse_dt_safe(f["created"])
+        resolved = parse_dt_safe(f.get("resolutiondate"))
+        if created and resolved:
+            quarter_turnaround_days.append((resolved - created).total_seconds() / 86400.0)
+
+    quarter_avg_turnaround = round(sum(quarter_turnaround_days) / len(quarter_turnaround_days), 1) if quarter_turnaround_days else None
+    quarter_median_turnaround = None
+    if quarter_turnaround_days:
+        s = sorted(quarter_turnaround_days)
+        mid = len(s) // 2
+        quarter_median_turnaround = round(s[mid] if len(s) % 2 else (s[mid - 1] + s[mid]) / 2, 1)
 
     content_quarter = {
         "label": quarter_label,
@@ -510,10 +522,12 @@ def main():
         "stale_threshold_days": STALE_DAYS,
         "summary": {
             "open_total": len(open_issues),
-            "done_recent_total": len(done_issues),
+            # "Closed" and turnaround are scoped to the current quarter, not
+            # a rolling N-day window — see quarter_label/quarter_done_issues.
+            "done_recent_total": len(quarter_done_issues),
             "stale_backlog_total": len(stale_tickets),
-            "avg_turnaround_days": avg_turnaround,
-            "median_turnaround_days": median_turnaround,
+            "avg_turnaround_days": quarter_avg_turnaround,
+            "median_turnaround_days": quarter_median_turnaround,
         },
         "status_breakdown": [
             {"status": k, "count": v} for k, v in sorted(status_counts.items(), key=lambda kv: status_sort_key(kv[0]))
@@ -533,7 +547,7 @@ def main():
 
     print(f"Wrote {OUTPUT_PATH}")
     print(f"  open: {data['summary']['open_total']}, "
-          f"done last {RECENT_DAYS}d: {data['summary']['done_recent_total']}, "
+          f"done {quarter_label}: {data['summary']['done_recent_total']}, "
           f"stale backlog: {data['summary']['stale_backlog_total']}")
 
 
