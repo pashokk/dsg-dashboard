@@ -69,6 +69,11 @@ EXCLUDED_ASSIGNEES = ["Alexander Pleshkan", "Marc Llobet Rodríguez"]
 # Short/ambiguous keywords use word boundaries so e.g. "ui" doesn't match
 # "build"; adjust freely, this is just keyword matching, not ML.
 TAG_RULES = [
+    # Checked first: a client case study/success story is worth flagging as
+    # its own thing regardless of the deliverable format (banner, deck,
+    # one-pager...) — these name a real client (CallApp, Veraxen, FozerGames,
+    # ...) in the title, which is the signal worth surfacing.
+    ("Case Study / Client Story", ["case study", "success stor"]),
     ("UI / Dashboard", ["dashboard", r"\bui\b", r"\bux\b", "interface", "design system", "component"]),
     ("Presentations / Decks", ["presentation", "deck", "one-pager", "1-pager", "onepager", "media kit", "slide"]),
     ("Website / Landing", ["website", "landing", "webpage", r"\bweb\b", r"\bsite\b"]),

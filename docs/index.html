@@ -22,6 +22,7 @@
     --info:#3E6B94;
     --teal:#2E7A73;
     --plum:#8C4B6B;
+    --gold:#A6780A;
     --font-display: "Newsreader", Georgia, serif;
     --font-body: "Work Sans", -apple-system, sans-serif;
   }
@@ -39,6 +40,7 @@
       --info:#6FA8D9;
       --teal:#4FB0A6;
       --plum:#C283A6;
+      --gold:#D9A93E;
     }
   }
   :root[data-theme="dark"]{
@@ -54,6 +56,7 @@
     --info:#6FA8D9;
     --teal:#4FB0A6;
     --plum:#C283A6;
+    --gold:#D9A93E;
   }
 
   *{box-sizing:border-box;}
@@ -426,6 +429,7 @@ async function loadData(){
 }
 
 const TAG_COLOR = {
+  'Case Study / Client Story': 'var(--gold)',
   'UI / Dashboard': 'var(--stamp)',
   'Presentations / Decks': 'var(--info)',
   'Website / Landing': 'var(--ochre)',
@@ -570,7 +574,7 @@ function render(data){
     </div>
   `;
 
-  const TAG_ORDER = ['UI / Dashboard', 'Presentations / Decks', 'Website / Landing', 'Illustration / Graphics', 'Branding / Print', 'Video / Motion', 'HR / Internal', 'Other'];
+  const TAG_ORDER = ['Case Study / Client Story', 'UI / Dashboard', 'Presentations / Decks', 'Website / Landing', 'Illustration / Graphics', 'Branding / Print', 'Video / Motion', 'HR / Internal', 'Other'];
   const tagsPresent = new Set();
   data.workload.forEach(w => (w.by_type || []).forEach(t => tagsPresent.add(t.tag)));
   const typeLegendHtml = TAG_ORDER.filter(t => tagsPresent.has(t)).map(t => `
