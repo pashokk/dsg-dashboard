@@ -130,6 +130,39 @@
   .stat.alert .n{color:var(--stamp);}
   .stat.good .n{color:var(--good);}
 
+  /* request types — tile matrix */
+  .type-tiles{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(130px, 1fr));
+  }
+  .type-tile{
+    background:var(--paper);
+    padding:1.1rem 1.2rem;
+    border:1px solid var(--line);
+    margin:0 0 -1px -1px;
+  }
+  .type-tile .n{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:2rem;
+    line-height:1;
+    display:block;
+  }
+  .type-tile .l{
+    display:flex;
+    align-items:center;
+    gap:0.4rem;
+    font-size:0.78rem;
+    color:var(--ink-soft);
+    margin-top:0.5rem;
+  }
+  .type-tile .l .dot{
+    width:0.55rem;
+    height:0.55rem;
+    border-radius:50%;
+    flex-shrink:0;
+  }
+
   section{margin-bottom:2.8rem;}
   section > h2{
     font-family:var(--font-display);
@@ -563,7 +596,6 @@ function render(data){
 
   const s = data.summary;
   const maxOpen = Math.max(1, ...data.workload.map(w => w.open));
-  const maxType = Math.max(1, ...(data.type_breakdown || []).map(t => t.count));
 
   const statsHtml = `
     <div class="stats">
@@ -631,10 +663,9 @@ function render(data){
   `;
 
   const typeHtml = (data.type_breakdown || []).map(t => `
-    <div class="status-row">
-      <span class="label">${escapeHtml(t.tag)}</span>
-      <span class="bar-track"><span class="bar-fill" style="width:${(t.count / maxType * 100).toFixed(0)}%;background:${TAG_COLOR[t.tag] || 'var(--ink-soft)'}"></span></span>
-      <span class="count">${t.count}</span>
+    <div class="type-tile">
+      <span class="n">${t.count}</span>
+      <span class="l"><span class="dot" style="background:${TAG_COLOR[t.tag] || 'var(--ink-soft)'}"></span>${escapeHtml(t.tag)}</span>
     </div>
   `).join('');
 
@@ -711,7 +742,7 @@ function render(data){
     <section>
       <h2>Request types</h2>
       <p class="hint">Everything currently open, by tagged type. Same heuristic as the breakdown above, rolled up across everyone.</p>
-      ${typeHtml}
+      <div class="type-tiles">${typeHtml}</div>
     </section>
   `;
 
