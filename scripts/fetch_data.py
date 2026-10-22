@@ -435,12 +435,14 @@ def main():
     quarter_done_issues = [i for i in quarter_done_issues if not is_excluded_assignee(i["fields"])]
 
     content_counts = defaultdict(int)
+    quarter_type_counts = defaultdict(int)
     for issue in quarter_done_issues:
         f = issue["fields"]
         parent = f.get("parent")
         parent_summary = parent["fields"]["summary"] if parent else None
         for t in classify_content_types(f["summary"], f.get("labels"), parent_summary):
             content_counts[t] += 1
+        quarter_type_counts[classify_type(f["summary"], f.get("labels"), parent_summary)] += 1
 
     content_quarter = {
         "label": quarter_label,
@@ -495,7 +497,11 @@ def main():
         statuses.sort(key=lambda s: status_sort_key(s["status"]))
         workload_detail.append({"name": p, "statuses": statuses})
 
-    type_breakdown = [{"tag": t, "count": c} for t, c in sorted(type_counts.items(), key=lambda kv: -kv[1])]
+    # "Request types" (top-level type_breakdown) is scoped to tickets done
+    # this quarter, not current open workload — see quarter_type_counts above.
+    # type_counts itself (current open backlog, by tag) still powers the
+    # Workload section's per-person breakdown further below, unchanged.
+    type_breakdown = [{"tag": t, "count": c} for t, c in sorted(quarter_type_counts.items(), key=lambda kv: -kv[1])]
 
     data = {
         "generated_at": now.isoformat(),

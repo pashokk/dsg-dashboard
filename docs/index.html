@@ -794,7 +794,7 @@ function render(data){
 
     <section>
       <h2>Request types</h2>
-      <p class="hint">Everything currently open, by tagged type. Same heuristic as the breakdown above, rolled up across everyone.</p>
+      <p class="hint">${data.content_quarter ? escapeHtml(data.content_quarter.label) : ''} — tickets marked done this quarter, by tagged request type (same heuristic as Workload above).</p>
       <div class="type-tiles">${typeHtml}</div>
     </section>
 
