@@ -114,7 +114,10 @@ def classify_type(summary, labels, parent_summary=None):
 # What kind of content piece a *completed* ticket produced, for the
 # "content made this quarter" count. Separate taxonomy from TAG_RULES above
 # (that one's about request type for current workload; this one's about
-# finished deliverable format) — checked in this order, first match wins.
+# finished deliverable format). Unlike TAG_RULES, this one is NOT first-match-
+# wins: a single ticket can genuinely produce more than one content piece
+# (e.g. "Blog banner image + LinkedIn for FOMO" is both a blog post and a
+# LinkedIn post), so every category whose keywords appear gets counted.
 CONTENT_TYPE_RULES = [
     ("Events", ["event", "booth", "conference", "expo", "summit", "meetup",
                 "dmexco", "chinajoy", "game connect", "white nights", r"\bcab\b"]),
@@ -131,16 +134,26 @@ CONTENT_TYPE_ORDER = ["Landings", "Website pages", "Decks", "Events", "1-pagers"
                       "LinkedIn posts", "Blog posts", "Banners", "Other"]
 
 
-def classify_content_type(summary, labels, parent_summary=None):
+def _match_all_tags(text, rules):
+    tags = set()
+    for tag, patterns in rules:
+        for pat in patterns:
+            matched = re.search(pat, text) if pat.startswith(r"\b") else pat in text
+            if matched:
+                tags.add(tag)
+                break
+    return tags
+
+
+def classify_content_types(summary, labels, parent_summary=None):
     text = (summary or "").lower() + " " + " ".join(labels or []).lower()
-    tag = _match_tag(text, CONTENT_TYPE_RULES)
-    if tag:
-        return tag
+    tags = _match_all_tags(text, CONTENT_TYPE_RULES)
     if parent_summary:
-        tag = _match_tag(parent_summary.lower(), CONTENT_TYPE_RULES)
-        if tag:
-            return tag
-    return "Other"
+        # Parent adds any category the ticket's own text didn't already
+        # name — same fallback spirit as classify_type, just additive
+        # instead of first-match since more than one tag can apply.
+        tags |= _match_all_tags(parent_summary.lower(), CONTENT_TYPE_RULES)
+    return tags or {"Other"}
 
 # Override with DATA_OUTPUT_PATH inside the container (Coolify sets this to
 # the nginx-served docs/ folder); defaults to the repo's own docs/ for local runs.
@@ -426,7 +439,8 @@ def main():
         f = issue["fields"]
         parent = f.get("parent")
         parent_summary = parent["fields"]["summary"] if parent else None
-        content_counts[classify_content_type(f["summary"], f.get("labels"), parent_summary)] += 1
+        for t in classify_content_types(f["summary"], f.get("labels"), parent_summary):
+            content_counts[t] += 1
 
     content_quarter = {
         "label": quarter_label,

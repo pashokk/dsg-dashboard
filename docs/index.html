@@ -800,7 +800,7 @@ function render(data){
 
     <section>
       <h2>Content produced this quarter</h2>
-      <p class="hint">${data.content_quarter ? escapeHtml(data.content_quarter.label) : ''} — tickets marked done, by content format (same parent-epic fallback as Request types; see <code>CONTENT_TYPE_RULES</code> in <code>fetch_data.py</code>). A LinkedIn graphic/asset ticket counts as a LinkedIn post.</p>
+      <p class="hint">${data.content_quarter ? escapeHtml(data.content_quarter.label) : ''} — tickets marked done, by content format (same parent-epic fallback as Request types; see <code>CONTENT_TYPE_RULES</code> in <code>fetch_data.py</code>). A LinkedIn graphic/asset ticket counts as a LinkedIn post. A ticket covering more than one format (e.g. "blog banner + LinkedIn") counts in every format it names, so these numbers don't have to add up to the ticket count.</p>
       <div class="type-tiles">${contentQuarterHtml}</div>
     </section>
   `;
