@@ -84,8 +84,8 @@ TAG_RULES = [
 ]
 
 
-def _match_tag(text):
-    for tag, patterns in TAG_RULES:
+def _match_tag(text, rules):
+    for tag, patterns in rules:
         for pat in patterns:
             if pat.startswith(r"\b"):
                 if re.search(pat, text):
@@ -97,7 +97,7 @@ def _match_tag(text):
 
 def classify_type(summary, labels, parent_summary=None):
     text = (summary or "").lower() + " " + " ".join(labels or []).lower()
-    tag = _match_tag(text)
+    tag = _match_tag(text, TAG_RULES)
     if tag:
         return tag
     # Fall back to the parent epic's name — often more descriptive than the
@@ -105,7 +105,39 @@ def classify_type(summary, labels, parent_summary=None):
     # epic called "Improve Dashboard UX") — but only when the ticket's own
     # text didn't already tell us what it is.
     if parent_summary:
-        tag = _match_tag(parent_summary.lower())
+        tag = _match_tag(parent_summary.lower(), TAG_RULES)
+        if tag:
+            return tag
+    return "Other"
+
+
+# What kind of content piece a *completed* ticket produced, for the
+# "content made this quarter" count. Separate taxonomy from TAG_RULES above
+# (that one's about request type for current workload; this one's about
+# finished deliverable format) — checked in this order, first match wins.
+CONTENT_TYPE_RULES = [
+    ("Events", ["event", "booth", "conference", "expo", "summit", "meetup",
+                "dmexco", "chinajoy", "game connect", "white nights", r"\bcab\b"]),
+    ("LinkedIn posts", ["linkedin", r"\bli\b"]),
+    ("Decks", ["deck", "presentation", "slide"]),
+    ("1-pagers", ["1-pager", "one-pager", "onepager", "one pager"]),
+    ("Banners", ["banner"]),
+    ("Landings", ["landing"]),
+    ("Website pages", ["website", "webpage", "web page", "homepage", r"\bsite\b"]),
+    ("Blog posts", ["blog"]),
+]
+# Fixed display order, matching how they were asked for — not sorted by count.
+CONTENT_TYPE_ORDER = ["Landings", "Website pages", "Decks", "Events", "1-pagers",
+                      "LinkedIn posts", "Blog posts", "Banners", "Other"]
+
+
+def classify_content_type(summary, labels, parent_summary=None):
+    text = (summary or "").lower() + " " + " ".join(labels or []).lower()
+    tag = _match_tag(text, CONTENT_TYPE_RULES)
+    if tag:
+        return tag
+    if parent_summary:
+        tag = _match_tag(parent_summary.lower(), CONTENT_TYPE_RULES)
         if tag:
             return tag
     return "Other"
@@ -225,7 +257,7 @@ def main():
         open_fields,
     )
 
-    done_fields = ["summary", "status", "assignee", "created", "resolutiondate", "labels"]
+    done_fields = ["summary", "status", "assignee", "created", "resolutiondate", "labels", "parent"]
     done_issues = search_all_issues(
         f"project = {PROJECT_KEY} AND statusCategory = Done "
         f"AND resolutiondate >= -{RECENT_DAYS}d{excluded_clause} ORDER BY resolutiondate DESC",
@@ -375,6 +407,71 @@ def main():
         "month": build_trend(month_edges, fmt_month),
     }
 
+    # ---- content produced this quarter, by format ----
+    q_month = ((now.month - 1) // 3) * 3 + 1
+    quarter_start = datetime(now.year, q_month, 1, tzinfo=timezone.utc)
+    quarter_label = f"Q{(q_month - 1) // 3 + 1} {now.year} (to date)"
+
+    quarter_done_fields = ["summary", "labels", "parent"]
+    quarter_done_issues = search_all_issues(
+        f'project = {PROJECT_KEY} AND statusCategory = Done '
+        f'AND resolutiondate >= "{quarter_start.strftime("%Y-%m-%d")}"{excluded_clause} '
+        f"ORDER BY resolutiondate DESC",
+        quarter_done_fields,
+    )
+    quarter_done_issues = [i for i in quarter_done_issues if not is_excluded_assignee(i["fields"])]
+
+    content_counts = defaultdict(int)
+    for issue in quarter_done_issues:
+        f = issue["fields"]
+        parent = f.get("parent")
+        parent_summary = parent["fields"]["summary"] if parent else None
+        content_counts[classify_content_type(f["summary"], f.get("labels"), parent_summary)] += 1
+
+    content_quarter = {
+        "label": quarter_label,
+        "start": quarter_start.strftime("%Y-%m-%d"),
+        "counts": [
+            {"type": t, "count": content_counts.get(t, 0)}
+            for t in CONTENT_TYPE_ORDER
+            if content_counts.get(t, 0) or t != "Other"
+        ],
+    }
+
+    # ---- manually-curated "Featured" cross-links to the marketing dashboard ----
+    # See featured.json — a short, by-hand list of ticket -> note/metric
+    # (e.g. "tied to the DMEXCO LinkedIn post, 4,577 impressions"), since
+    # there's no API or shared ID connecting a DSG ticket to a LinkedIn post,
+    # blog view count, etc. Update that file whenever someone checks the
+    # marketing dashboard; no code change needed.
+    featured = []
+    featured_path = os.path.join(os.path.dirname(__file__), "..", "featured.json")
+    if os.path.exists(featured_path):
+        with open(featured_path, encoding="utf-8") as fh:
+            featured_entries = json.load(fh)
+        keys = [e["key"] for e in featured_entries if e.get("key")]
+        if keys:
+            key_clause = ", ".join(keys)
+            featured_issues = search_all_issues(
+                f"key in ({key_clause})",
+                ["summary", "status", "assignee"],
+            )
+            by_key = {i["key"]: i["fields"] for i in featured_issues}
+            for entry in featured_entries:
+                f = by_key.get(entry["key"])
+                if not f:
+                    continue
+                assignee = f.get("assignee")
+                featured.append({
+                    "key": entry["key"],
+                    "summary": f["summary"],
+                    "status": f["status"]["name"],
+                    "assignee": assignee["displayName"] if assignee else "Unassigned",
+                    "note": entry.get("note", ""),
+                    "metric": entry.get("metric", ""),
+                    "url": f"{BASE_URL}/browse/{entry['key']}",
+                })
+
     workload_detail = []
     for p in [w["name"] for w in workload]:
         statuses = []
@@ -404,6 +501,8 @@ def main():
         "workload": workload,
         "workload_detail": workload_detail,
         "type_breakdown": type_breakdown,
+        "content_quarter": content_quarter,
+        "featured": featured,
         "trend": trend,
         "stale_tickets": stale_tickets[:25],  # cap for a readable dashboard
     }

@@ -163,6 +163,31 @@
     flex-shrink:0;
   }
 
+  /* featured — manual cross-links to the marketing dashboard */
+  .featured-card{
+    border:1px solid var(--line);
+    padding:0.9rem 1.1rem;
+    margin-bottom:0.7rem;
+  }
+  .featured-card:last-child{margin-bottom:0;}
+  .featured-head{
+    display:flex;
+    align-items:baseline;
+    gap:0.6rem;
+    flex-wrap:wrap;
+    font-size:0.92rem;
+  }
+  .featured-star{color:var(--gold);}
+  .featured-key{font-weight:600;white-space:nowrap;}
+  .featured-summary{color:var(--ink-soft);}
+  .featured-note{margin-top:0.4rem;font-size:0.88rem;}
+  .featured-metric{
+    margin-top:0.3rem;
+    font-size:0.82rem;
+    color:var(--ink-soft);
+    font-style:italic;
+  }
+
   section{margin-bottom:2.8rem;}
   section > h2{
     font-family:var(--font-display);
@@ -669,6 +694,25 @@ function render(data){
     </div>
   `).join('');
 
+  const contentQuarterHtml = data.content_quarter ? (data.content_quarter.counts || []).map(c => `
+    <div class="type-tile">
+      <span class="n">${c.count}</span>
+      <span class="l">${escapeHtml(c.type)}</span>
+    </div>
+  `).join('') : '';
+
+  const featuredHtml = (data.featured || []).length ? data.featured.map(f => `
+    <div class="featured-card">
+      <div class="featured-head">
+        <span class="featured-star">★</span>
+        <span class="featured-key">${f.url ? `<a href="${f.url}" target="_blank" rel="noopener">${escapeHtml(f.key)}</a>` : escapeHtml(f.key)}</span>
+        <span class="featured-summary">${escapeHtml(f.summary)}</span>
+      </div>
+      <div class="featured-note">${escapeHtml(f.note)}</div>
+      <div class="featured-metric">${escapeHtml(f.metric)}</div>
+    </div>
+  `).join('') : '';
+
   const staleHtml = data.stale_tickets.length ? `
     <table class="stale">
       <thead><tr><th>Ticket</th><th>Summary</th><th>Assignee</th><th>Type</th><th>Age</th></tr></thead>
@@ -693,9 +737,18 @@ function render(data){
     </div>
   ` : '';
 
+  const featuredSectionHtml = (data.featured || []).length ? `
+    <section>
+      <h2>Featured</h2>
+      <p class="hint">Hand-picked ties to the <a href="https://v8gkkksgcwsg0gokgwk0oksk.appodeal.me/" target="_blank" rel="noopener">marketing dashboard</a> — there's no shared ID between a Jira ticket and a LinkedIn post or page view, so this list is updated by hand (see <code>featured.json</code>) whenever someone checks that dashboard.</p>
+      ${featuredHtml}
+    </section>
+  ` : '';
+
   document.getElementById('content').innerHTML = `
     ${bannerHtml}
     ${statsHtml}
+    ${featuredSectionHtml}
 
     <section>
       <h2>Workload</h2>
@@ -743,6 +796,12 @@ function render(data){
       <h2>Request types</h2>
       <p class="hint">Everything currently open, by tagged type. Same heuristic as the breakdown above, rolled up across everyone.</p>
       <div class="type-tiles">${typeHtml}</div>
+    </section>
+
+    <section>
+      <h2>Content produced this quarter</h2>
+      <p class="hint">${data.content_quarter ? escapeHtml(data.content_quarter.label) : ''} — tickets marked done, by content format (same parent-epic fallback as Request types; see <code>CONTENT_TYPE_RULES</code> in <code>fetch_data.py</code>). A LinkedIn graphic/asset ticket counts as a LinkedIn post.</p>
+      <div class="type-tiles">${contentQuarterHtml}</div>
     </section>
   `;
 

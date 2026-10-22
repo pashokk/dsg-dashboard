@@ -24,6 +24,32 @@
     { "tag": "Illustration / Graphics", "count": 6 },
     { "tag": "Presentations / Decks", "count": 4 }
   ],
+  "content_quarter": {
+    "label": "Q4 2026 (to date, sample)",
+    "start": "2026-10-01",
+    "counts": [
+      { "type": "Landings", "count": 2 },
+      { "type": "Website pages", "count": 1 },
+      { "type": "Decks", "count": 3 },
+      { "type": "Events", "count": 4 },
+      { "type": "1-pagers", "count": 2 },
+      { "type": "LinkedIn posts", "count": 5 },
+      { "type": "Blog posts", "count": 0 },
+      { "type": "Banners", "count": 1 },
+      { "type": "Other", "count": 3 }
+    ]
+  },
+  "featured": [
+    {
+      "key": "SAMPLE-4",
+      "summary": "(placeholder) event booth design",
+      "status": "Done",
+      "assignee": "Sergey Baranov",
+      "note": "(placeholder) tied to a LinkedIn recap post",
+      "metric": "(placeholder) 4,500 impressions",
+      "url": null
+    }
+  ],
   "trend": {
     "day": {
       "labels": ["Aug 18", "Aug 19", "Aug 20", "Aug 21", "Aug 22", "Aug 23", "Aug 24", "Aug 25", "Aug 26", "Aug 27", "Aug 28", "Aug 29", "Aug 30", "Aug 31", "Sep 1", "Sep 2", "Sep 3", "Sep 4", "Sep 5", "Sep 6", "Sep 7", "Sep 8", "Sep 9", "Sep 10", "Sep 11", "Sep 12", "Sep 13", "Sep 14", "Sep 15", "Sep 16"],

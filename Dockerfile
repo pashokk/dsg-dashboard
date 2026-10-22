@@ -8,6 +8,7 @@ RUN apk add --no-cache python3
 
 COPY docs /usr/share/nginx/html
 COPY scripts /app/scripts
+COPY featured.json /app/featured.json
 COPY docker-entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
