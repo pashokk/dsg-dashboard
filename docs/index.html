@@ -311,6 +311,16 @@
   .status-row.done .bar-fill{background:var(--good);}
   .status-row .count{text-align:right;}
 
+  .status-stack{
+    display:grid;
+    grid-template-columns:1fr 4rem;
+    align-items:center;
+    gap:0.8rem;
+    padding:0.5rem 0;
+  }
+  .status-stack .count{text-align:right;color:var(--ink-soft);font-size:0.9rem;}
+  .bar-track.tall{height:1rem;}
+
   /* stale ticket list */
   table.stale{
     width:100%;
@@ -549,7 +559,6 @@ function render(data){
 
   const s = data.summary;
   const maxOpen = Math.max(1, ...data.workload.map(w => w.open));
-  const maxStatus = Math.max(1, ...data.status_breakdown.map(st => st.count));
   const maxType = Math.max(1, ...(data.type_breakdown || []).map(t => t.count));
 
   const statsHtml = `
@@ -597,13 +606,25 @@ function render(data){
   `;
   }).join('');
 
-  const statusHtml = data.status_breakdown.map(st => `
-    <div class="status-row ${st.status.toLowerCase() === 'done' ? 'done' : ''}">
-      <span class="label">${st.status}</span>
-      <span class="bar-track"><span class="bar-fill" style="width:${(st.count / maxStatus * 100).toFixed(0)}%"></span></span>
-      <span class="count">${st.count}</span>
-    </div>
+  const STATUS_COLOR = {
+    'To Do': 'var(--ink-soft)',
+    'In Progress': 'var(--ochre)',
+    'In Review': 'var(--info)',
+    'Paused': 'var(--stamp)',
+    'Done': 'var(--good)',
+  };
+  const statusTotal = data.status_breakdown.reduce((sum, s) => sum + s.count, 0);
+  const statusLegendHtml = data.status_breakdown.map(st => `
+    <span class="item"><span class="dot" style="background:${STATUS_COLOR[st.status] || 'var(--ink-soft)'}"></span>${escapeHtml(st.status)} · ${st.count}</span>
   `).join('');
+  const statusSegHtml = data.status_breakdown.map(st => `<span class="bar-seg" title="${escapeHtml(st.status)}: ${st.count}" style="width:${statusTotal ? (st.count / statusTotal * 100).toFixed(1) : 0}%;background:${STATUS_COLOR[st.status] || 'var(--ink-soft)'}"></span>`).join('');
+  const statusHtml = `
+    <div class="type-legend">${statusLegendHtml}</div>
+    <div class="status-stack">
+      <span class="bar-track tall"><span class="bar-fill-stack" style="width:100%">${statusSegHtml}</span></span>
+      <span class="count">${statusTotal} open</span>
+    </div>
+  `;
 
   const typeHtml = (data.type_breakdown || []).map(t => `
     <div class="status-row">
@@ -678,7 +699,7 @@ function render(data){
 
       <section>
         <h2>Status breakdown</h2>
-        <p class="hint">Everything currently open, by status.</p>
+        <p class="hint">Everything currently open, by status (hover a segment for the exact count).</p>
         ${statusHtml}
       </section>
     </div>
