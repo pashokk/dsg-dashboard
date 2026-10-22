@@ -209,6 +209,10 @@ def main():
     recent_cutoff = now - timedelta(days=RECENT_DAYS)
 
     excluded_clause = "".join(f' AND status != "{s}"' for s in EXCLUDED_STATUSES)
+    # Epics are containers, not work items — one can legitimately sit open
+    # for years while its children get done (e.g. an "X design for marketing"
+    # epic). Exclude them everywhere counts/stale detection happen.
+    excluded_clause += ' AND issuetype != Epic'
 
     open_fields = ["summary", "status", "assignee", "created", "priority", "labels", "parent"]
     open_issues = search_all_issues(
@@ -219,7 +223,7 @@ def main():
     done_fields = ["summary", "status", "assignee", "created", "resolutiondate", "labels"]
     done_issues = search_all_issues(
         f"project = {PROJECT_KEY} AND statusCategory = Done "
-        f"AND resolutiondate >= -{RECENT_DAYS}d ORDER BY resolutiondate DESC",
+        f"AND resolutiondate >= -{RECENT_DAYS}d{excluded_clause} ORDER BY resolutiondate DESC",
         done_fields,
     )
 
