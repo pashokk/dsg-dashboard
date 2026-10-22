@@ -62,7 +62,7 @@ def status_sort_key(name):
 # People whose tickets shouldn't appear anywhere on this dashboard (not open
 # counts, not the trend chart, nothing) — e.g. people outside the core team
 # who show up as an assignee on a handful of tickets.
-EXCLUDED_ASSIGNEES = ["Alexander Pleshkan", "Marc Llobet Rodríguez"]
+EXCLUDED_ASSIGNEES = ["Alexander Pleshkan", "Marc Llobet Rodríguez", "Anton Balaev"]
 
 # Heuristic tags for "what kind of request is this" — checked in order,
 # first match wins. Matched against the ticket summary + labels, lowercased.
